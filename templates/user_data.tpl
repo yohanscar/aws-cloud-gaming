@@ -154,8 +154,9 @@ install-autologin
 
 %{ if var.install_graphic_card_driver }
 install-graphic-driver
-install-audio-install
 %{ endif }
+
+install-audio-install
 
 %{ if var.install_steam }
 choco install steam

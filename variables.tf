@@ -12,7 +12,7 @@ variable "resource_name" {
 variable "allowed_availability_zone_identifier" {
   description = "The allowed availability zone identify (the letter suffixing the region). Choose ones that allows you to request the desired instance as spot instance in your region. An availability zone will be selected at random and the instance will be booted in it."
   type = list(string)
-  default = ["a", "b"]
+  default = ["a", "b", "c"]
 }
 
 variable "instance_type" {
