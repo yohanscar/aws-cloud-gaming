@@ -2,7 +2,7 @@ region = "sa-east-1"
 #allowed_availability_zone_identifier = ["a", "b"]
 #instance_type = "g4dn.xlarge"
 #root_block_device_size_gb = 120
-custom_ami = "ami-08ef5dc08dfb85f69"
+custom_ami = "ami-0359c27d7d1cb799a"
 
 install_parsec=true
 install_auto_login=true
