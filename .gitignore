@@ -69,3 +69,6 @@ tags
 
 terraform.tfvars
 *.rdp
+
+# Text file EC2 password
+passec2.txt
