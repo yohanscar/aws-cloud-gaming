@@ -2,7 +2,7 @@ region = "us-east-1"
 #allowed_availability_zone_identifier = ["a", "b"]
 #instance_type = "g4dn.xlarge"
 #root_block_device_size_gb = 120
-custom_ami = "ami-0ad8f6db4840aa339"
+custom_ami = "ami-025e47f2eae0172b8"
 
 skip_install                = true
 install_parsec              = true
