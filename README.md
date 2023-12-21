@@ -91,6 +91,7 @@ resource "aws_volume_attachment" "game_volume_attachment" {
 | install_parsec | Download and run Parsec-Cloud-Preparation-Tool on first login | `bool` | true |
 | install_auto_login | Configure auto-login on first boot | `bool` | true |
 | install_graphic_card_driver | Download and install the Nvidia driver on first boot | `bool` | true |
+| install_moonlight | Download and install Moonlight NVIDIA's GameStream Client on first boot | `bool` | true |
 | install_steam | Download and install Valve Steam on first boot | `bool` | true |
 | install_gog_galaxy | Download and install GOG Galaxy on first boot | `bool` | false |
 | install_uplay | Download and install Ubisoft Uplay on first boot | `bool` | false |

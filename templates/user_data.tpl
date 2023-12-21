@@ -126,17 +126,8 @@ function install-graphic-driver {
     }
 }
 
-# https://www.reddit.com/r/cloudygamer/comments/kyet29/steam_link_audio_with_aws_instance_based_on/?utm_medium=android_app&utm_source=share
-function install-audio-install {
-    (New-Object System.Net.WebClient).DownloadFile("http://rzr.to/surround-pc-download", "C:\ParsecTemp\Apps\razer-surround-driver.exe")
-    ExtractRazerAudio
-    ModidifyManifest
-    $OriginalLocation = Get-Location
-    Set-Location -Path 'C:\ParsecTemp\Apps\razer-surround-driver\$TEMP\RazerSurroundInstaller\'
-    Start-Process RzUpdateManager.exe
-    Set-Location $OriginalLocation
-    Set-Service -Name audiosrv -StartupType Automatic
-}
+
+
 
 install-chocolatey
 Install-PackageProvider -Name NuGet -Force
@@ -152,11 +143,16 @@ install-admin-password
 install-autologin
 %{ endif }
 
+# https://www.reddit.com/r/cloudygamer/comments/kyet29/steam_link_audio_with_aws_instance_based_on/?utm_medium=android_app&utm_source=share
+choco install razer-synapse-3
+
 %{ if var.install_graphic_card_driver }
 install-graphic-driver
 %{ endif }
 
-install-audio-install
+%{ if var.install_moonlight }
+choco install moonlight-qt
+%{ endif }
 
 %{ if var.install_steam }
 choco install steam

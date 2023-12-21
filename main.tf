@@ -152,6 +152,7 @@ resource "aws_spot_instance_request" "windows_instance" {
       install_parsec              = var.install_parsec,
       install_auto_login          = var.install_auto_login,
       install_graphic_card_driver = var.install_graphic_card_driver,
+      install_moonlight           = var.install_moonlight,
       install_steam               = var.install_steam,
       install_gog_galaxy          = var.install_gog_galaxy,
       install_origin              = var.install_origin,

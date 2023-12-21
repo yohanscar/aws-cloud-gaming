@@ -58,6 +58,12 @@ variable "install_graphic_card_driver" {
   default     = true
 }
 
+variable "install_moonlight" {
+  description = "Download and install Moonlight NVIDIA's GameStream Client on first boot"
+  type        = bool
+  default     = true
+}
+
 variable "install_steam" {
   description = "Download and install Valve Steam on first boot"
   type        = bool
