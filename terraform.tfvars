@@ -5,14 +5,14 @@ region = "sa-east-1"
 
 custom_ami = ""
 
-skip_install                = false
-install_parsec              = true
-install_auto_login          = true
-install_graphic_card_driver = true
+skip_install                 = false
+install_parsec               = true
+install_auto_login           = true
+download_graphic_card_driver = true
 
 install_moonlight = true
-install_steam = true
+install_steam     = true
 #install_gog_galaxy=false
-install_uplay=true
+install_uplay = true
 #install_origin=false
 install_epic_games_launcher = true

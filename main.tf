@@ -8,7 +8,7 @@ data "aws_ami" "windows_ami" {
 
   filter {
     name   = "name"
-    values = ["Windows_Server-2019-English-Full-Base-*"]
+    values = ["Windows_Server-2022-English-Full-Base-*"]
   }
 }
 
@@ -148,16 +148,16 @@ resource "aws_spot_instance_request" "windows_instance" {
   user_data = var.skip_install ? "" : templatefile("${path.module}/templates/user_data.tpl", {
     password_ssm_parameter = aws_ssm_parameter.password.name,
     var = {
-      instance_type               = var.instance_type,
-      install_parsec              = var.install_parsec,
-      install_auto_login          = var.install_auto_login,
-      install_graphic_card_driver = var.install_graphic_card_driver,
-      install_moonlight           = var.install_moonlight,
-      install_steam               = var.install_steam,
-      install_gog_galaxy          = var.install_gog_galaxy,
-      install_origin              = var.install_origin,
-      install_epic_games_launcher = var.install_epic_games_launcher,
-      install_uplay               = var.install_uplay,
+      instance_type                = var.instance_type,
+      install_parsec               = var.install_parsec,
+      install_auto_login           = var.install_auto_login,
+      download_graphic_card_driver = var.download_graphic_card_driver,
+      install_moonlight            = var.install_moonlight,
+      install_steam                = var.install_steam,
+      install_gog_galaxy           = var.install_gog_galaxy,
+      install_origin               = var.install_origin,
+      install_epic_games_launcher  = var.install_epic_games_launcher,
+      install_uplay                = var.install_uplay,
     }
   })
   iam_instance_profile = aws_iam_instance_profile.windows_instance_profile.id

@@ -12,31 +12,6 @@ function install-chocolatey {
     choco feature enable -n allowGlobalConfirmation
 }
 
-function install-parsec-cloud-preparation-tool {
-    # https://github.com/jamesstringerparsec/Parsec-Cloud-Preparation-Tool
-    $desktopPath = [Environment]::GetFolderPath("Desktop")
-    $downloadPath = "C:\Parsec-Cloud-Preparation-Tool.zip"
-    $extractPath = "C:\Parsec-Cloud-Preparation-Tool"
-    $repoPath = Join-Path $extractPath "Parsec-Cloud-Preparation-Tool-master"
-    $copyPath = Join-Path $desktopPath "ParsecTemp"
-    $scriptEntrypoint = Join-Path $repoPath "PostInstall\PostInstall.ps1"
-
-    if (!(Test-Path -Path $extractPath)) {
-        [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-        (New-Object System.Net.WebClient).DownloadFile("https://github.com/jamesstringerparsec/Parsec-Cloud-Preparation-Tool/archive/master.zip", $downloadPath)
-        New-Item -Path $extractPath -ItemType Directory
-        Expand-Archive $downloadPath -DestinationPath $extractPath
-        Remove-Item $downloadPath
-
-        New-Item -Path $copyPath -ItemType Directory
-        Copy-Item $repoPath/* $copyPath -Recurse -Container
-
-        # Setup scheduled task to run Parsec-Cloud-Preparation-Tool once at logon
-        $action = New-ScheduledTaskAction -Execute powershell.exe -WorkingDirectory $repoPath -Argument "-Command `"$scriptEntrypoint -DontPromptPasswordUpdateGPU`""
-        run-once-on-login "Parsec-Cloud-Preparation-Tool" $action
-    }
-}
-
 function install-admin-password {
     $password = (Get-SSMParameter -WithDecryption $true -Name '${password_ssm_parameter}').Value
     net user Administrator "$password"
@@ -53,76 +28,64 @@ function install-autologin {
     (New-Object PInvoke.LSAUtil.LSAutil -ArgumentList "DefaultPassword").SetSecret($password)
 }
 
-function install-graphic-driver {
-    # https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/install-nvidia-driver.html#nvidia-gaming-driver
+# https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/install-nvidia-driver.html#nvidia-gaming-driver
+function download-graphic-driver {
+        
+    $downloadGraphicDriver = 0
 
-    if (!(Test-Path -Path "C:\Program Files\NVIDIA Corporation\NVSMI")) {
-        $ExtractionPath = "C:\nvidia-driver\driver"
-        $Bucket = ""
-        $KeyPrefix = ""
-        $InstallerFilter = "*win10*"
-
-        %{ if regex("^g[0-9]+", var.instance_type) == "g3" }
+    %{ if regex("^g[0-9]+", var.instance_type) == "g3" }
 
         # GRID driver for g3
         $Bucket = "ec2-windows-nvidia-drivers"
         $KeyPrefix = "latest"
-
-        # download driver
+        $LocalPath = "$home\Desktop\NVIDIA"
         $Objects = Get-S3Object -BucketName $Bucket -KeyPrefix $KeyPrefix -Region us-east-1
         foreach ($Object in $Objects) {
             $LocalFileName = $Object.Key
             if ($LocalFileName -ne '' -and $Object.Size -ne 0) {
-                $LocalFilePath = Join-Path $ExtractionPath $LocalFileName
+                $LocalFilePath = Join-Path $LocalPath $LocalFileName
                 Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $LocalFilePath -Region us-east-1
             }
         }
 
-        # disable licencing page in control panel
+        New-Item -Path "HKLM:\SOFTWARE\NVIDIA Corporation\Global" -Name GridLicensing
         New-ItemProperty -Path "HKLM:\SOFTWARE\NVIDIA Corporation\Global\GridLicensing" -Name "NvCplDisableManageLicensePage" -PropertyType "DWord" -Value "1"
+        $downloadGraphicDriver = 1
 
-        %{ else }
-        %{ if regex("^g[0-9]+", var.instance_type) == "g4" }
+    %{ else }
+    %{ if regex("^g[0-9]+", var.instance_type) == "g4" }
 
         # vGaming driver for g4
         $Bucket = "nvidia-gaming"
         $KeyPrefix = "windows/latest"
-
-        # download and extract driver
+        $LocalPath = "$home\Desktop\NVIDIA"
         $Objects = Get-S3Object -BucketName $Bucket -KeyPrefix $KeyPrefix -Region us-east-1
         foreach ($Object in $Objects) {
-            if ($Object.Size -ne 0) {
-                $LocalFileName = "C:\nvidia-driver\driver.zip"
-                Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $LocalFileName -Region us-east-1
-                Expand-Archive $LocalFileName -DestinationPath $ExtractionPath
-                break
+            $LocalFileName = $Object.Key
+            if ($LocalFileName -ne '' -and $Object.Size -ne 0) {
+                $LocalFilePath = Join-Path $LocalPath $LocalFileName
+                Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $LocalFilePath -Region us-east-1
             }
         }
 
-        # install licence
-        Copy-S3Object -BucketName $Bucket -Key "GridSwCert-Archive/GridSwCert-Windows_2020_04.cert" -LocalFile "C:\Users\Public\Documents\GridSwCert.txt" -Region us-east-1
-        [microsoft.win32.registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global", "vGamingMarketplace", 0x02)
+        New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global" -Name "vGamingMarketplace" -PropertyType "DWord" -Value "2"
+        Invoke-WebRequest -Uri "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertWindows_2023_9_22.cert" -OutFile "$Env:PUBLIC\Documents\GridSwCert.txt"
+        $downloadGraphicDriver = 1
 
-        %{ endif }
-        %{ endif }
+    %{ endif }
+    %{ endif }
 
-        if (Test-Path -Path $ExtractionPath) {
-            # install driver
-            $InstallerFile = Get-ChildItem -path $ExtractionPath -Include $InstallerFilter -Recurse | ForEach-Object { $_.FullName }
-            Start-Process -FilePath $InstallerFile -ArgumentList "/s /n" -Wait
+    if ($downloadGraphicDriver == 1) {
+        
+        # install task to disable second monitor on login
+        $trigger = New-ScheduledTaskTrigger -AtLogon
+        $action = New-ScheduledTaskAction -Execute displayswitch.exe -Argument "/internal"
+        Register-ScheduledTask -TaskName "disable-second-monitor" -Trigger $trigger -Action $action -RunLevel Highest
 
-            # install task to disable second monitor on login
-            $trigger = New-ScheduledTaskTrigger -AtLogon
-            $action = New-ScheduledTaskAction -Execute displayswitch.exe -Argument "/internal"
-            Register-ScheduledTask -TaskName "disable-second-monitor" -Trigger $trigger -Action $action -RunLevel Highest
-
-            # cleanup
-            Remove-Item -Path "C:\nvidia-driver" -Recurse
-        }
-        else {
-            $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "-WindowStyle Hidden -Command `"(New-Object -ComObject Wscript.Shell).Popup('Automatic GPU driver installation is unsupported for this instance type: ${var.instance_type}. Please install them manually.')`""
-            run-once-on-login "gpu-driver-warning" $action
-        }
+    }
+    else {
+        $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "-WindowStyle Hidden -Command `"(New-Object -ComObject Wscript.Shell).Popup('Automatic GPU driver installation is unsupported for this instance type: ${var.instance_type}. Please install them manually.')`""
+        run-once-on-login "gpu-driver-warning" $action
     }
 }
 
@@ -134,7 +97,7 @@ Install-PackageProvider -Name NuGet -Force
 choco install awstools.powershell
 
 %{ if var.install_parsec }
-install-parsec-cloud-preparation-tool
+choco install parsec
 %{ endif }
 
 install-admin-password
@@ -143,15 +106,14 @@ install-admin-password
 install-autologin
 %{ endif }
 
-# https://www.reddit.com/r/cloudygamer/comments/kyet29/steam_link_audio_with_aws_instance_based_on/?utm_medium=android_app&utm_source=share
-choco install razer-synapse-3
+choco install vb-cable
 
-%{ if var.install_graphic_card_driver }
-install-graphic-driver
+%{ if var.download_graphic_card_driver }
+download-graphic-driver
 %{ endif }
 
 %{ if var.install_moonlight }
-choco install moonlight-qt
+choco install moonlight-qt geforce-experience
 %{ endif }
 
 %{ if var.install_steam }

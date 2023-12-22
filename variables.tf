@@ -52,14 +52,14 @@ variable "install_auto_login" {
   default     = true
 }
 
-variable "install_graphic_card_driver" {
-  description = "Download and install the Nvidia driver on first boot"
+variable "download_graphic_card_driver" {
+  description = "Download the Nvidia driver on first boot"
   type        = bool
   default     = true
 }
 
 variable "install_moonlight" {
-  description = "Download and install Moonlight NVIDIA's GameStream Client on first boot"
+  description = "Download and install Moonlight NVIDIA's GameStream Client and GeForce Experience on first boot"
   type        = bool
   default     = true
 }
