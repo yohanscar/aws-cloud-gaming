@@ -12,6 +12,18 @@ function install-chocolatey {
     choco feature enable -n allowGlobalConfirmation
 }
 
+function install-parsec-cloud-preparation-tool {
+    # https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool
+    # https://www.reddit.com/r/ParsecGaming/comments/cl3pwr/start_parsec_service_when_computer_is_booted_not/
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
+    $ScriptWebArchive = "https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool/archive/master.zip"  
+    $LocalArchivePath = "$ENV:UserProfile\Downloads\Parsec-Cloud-Preparation-Tool"  
+    (New-Object System.Net.WebClient).DownloadFile($ScriptWebArchive, "$LocalArchivePath.zip")  
+    Expand-Archive "$LocalArchivePath.zip" -DestinationPath $LocalArchivePath -Force  
+    CD $LocalArchivePath\Parsec-Cloud-Preparation-Tool-master\PostInstall
+    powershell.exe .\PostInstall.ps1 -DontPromptPasswordUpdateGPU
+}
+
 function install-admin-password {
     $password = (Get-SSMParameter -WithDecryption $true -Name '${password_ssm_parameter}').Value
     net user Administrator "$password"
@@ -30,7 +42,11 @@ function install-autologin {
 
 # https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/install-nvidia-driver.html#nvidia-gaming-driver
 function download-graphic-driver {
-        
+    
+    $ExtractionPath = "$home\Desktop\Drivers\NVIDIA"
+    $Bucket = ""
+    $KeyPrefix = ""
+    $InstallerFilter = "*win10*"
     $downloadGraphicDriver = 0
 
     %{ if regex("^g[0-9]+", var.instance_type) == "g3" }
@@ -38,12 +54,11 @@ function download-graphic-driver {
         # GRID driver for g3
         $Bucket = "ec2-windows-nvidia-drivers"
         $KeyPrefix = "latest"
-        $LocalPath = "$home\Desktop\NVIDIA"
         $Objects = Get-S3Object -BucketName $Bucket -KeyPrefix $KeyPrefix -Region us-east-1
         foreach ($Object in $Objects) {
             $LocalFileName = $Object.Key
             if ($LocalFileName -ne '' -and $Object.Size -ne 0) {
-                $LocalFilePath = Join-Path $LocalPath $LocalFileName
+                $LocalFilePath = Join-Path $ExtractionPath $LocalFileName
                 Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $LocalFilePath -Region us-east-1
             }
         }
@@ -58,12 +73,11 @@ function download-graphic-driver {
         # vGaming driver for g4
         $Bucket = "nvidia-gaming"
         $KeyPrefix = "windows/latest"
-        $LocalPath = "$home\Desktop\NVIDIA"
         $Objects = Get-S3Object -BucketName $Bucket -KeyPrefix $KeyPrefix -Region us-east-1
         foreach ($Object in $Objects) {
             $LocalFileName = $Object.Key
             if ($LocalFileName -ne '' -and $Object.Size -ne 0) {
-                $LocalFilePath = Join-Path $LocalPath $LocalFileName
+                $LocalFilePath = Join-Path $ExtractionPath $LocalFileName
                 Copy-S3Object -BucketName $Bucket -Key $Object.Key -LocalFile $LocalFilePath -Region us-east-1
             }
         }
@@ -76,7 +90,7 @@ function download-graphic-driver {
     %{ endif }
 
     if ($downloadGraphicDriver == 1) {
-        
+
         # install task to disable second monitor on login
         $trigger = New-ScheduledTaskTrigger -AtLogon
         $action = New-ScheduledTaskAction -Execute displayswitch.exe -Argument "/internal"
@@ -97,7 +111,7 @@ Install-PackageProvider -Name NuGet -Force
 choco install awstools.powershell
 
 %{ if var.install_parsec }
-choco install parsec
+install-parsec-cloud-preparation-tool
 %{ endif }
 
 install-admin-password
@@ -106,11 +120,11 @@ install-admin-password
 install-autologin
 %{ endif }
 
-choco install vb-cable
-
 %{ if var.download_graphic_card_driver }
 download-graphic-driver
 %{ endif }
+
+choco install vb-cable
 
 %{ if var.install_moonlight }
 choco install moonlight-qt geforce-experience
