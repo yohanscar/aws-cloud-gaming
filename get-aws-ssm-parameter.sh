@@ -1,0 +1,1 @@
+aws ssm get-parameter --name "cloud-gaming-administrator-password-bkp" --with-decryption | jq -r .Parameter.Value

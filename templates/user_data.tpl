@@ -125,6 +125,7 @@ install-autologin
 download-graphic-driver
 %{ endif }
 
+# https://otrs.unifei.edu.br/otrs/public.pl?Action=PublicFAQZoom;ItemID=300
 choco install vb-cable
 
 %{ if var.install_geforce_experience }
