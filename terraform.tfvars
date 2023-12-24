@@ -5,7 +5,7 @@ region = "sa-east-1"
 
 custom_ami = "ami-068f39ecc349d694d"
 
-skip_install                 = false
+skip_install                 = true
 install_parsec               = true
 install_auto_login           = true
 download_graphic_card_driver = true
