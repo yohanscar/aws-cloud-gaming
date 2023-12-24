@@ -14,7 +14,7 @@ function install-chocolatey {
 
 function install-parsec-cloud-preparation-tool {
     # https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool
-    # https://www.reddit.com/r/ParsecGaming/comments/cl3pwr/start_parsec_service_when_computer_is_booted_not/
+    # Fix parsec service: https://www.reddit.com/r/ParsecGaming/comments/cl3pwr/start_parsec_service_when_computer_is_booted_not/
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
     $ScriptWebArchive = "https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool/archive/master.zip"  
     $LocalArchivePath = "$ENV:UserProfile\Downloads\Parsec-Cloud-Preparation-Tool"  
@@ -112,6 +112,7 @@ choco install awstools.powershell
 
 %{ if var.install_parsec }
 install-parsec-cloud-preparation-tool
+choco install parsec
 %{ endif }
 
 install-admin-password
@@ -126,8 +127,11 @@ download-graphic-driver
 
 choco install vb-cable
 
-%{ if var.install_moonlight }
-choco install moonlight-qt geforce-experience
+%{ if var.install_geforce_experience }
+# How To Fix wlanapi.dll is missing error in Windows Server (for GeForce Experience): https://www.youtube.com/watch?v=Mq6xhtiZeKM&t=22s
+# https://github.com/tomgrice/cloudgamestream-sunshine?tab=readme-ov-file
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls";Set-ExecutionPolicy Unrestricted;Invoke-WebRequest -Uri https://github.com/tomgrice/cloudgamestream-sunshine/releases/download/June2021a/cloudgamestream-sunshine.zip -OutFile arch.zip;Add-Type -Assembly "System.IO.Compression.Filesystem";$dir = [string](Get-Location);rmdir -r cloudgamestream-master -ErrorAction Ignore;[System.IO.Compression.ZipFile]::ExtractToDirectory($dir + "\arch.zip", $dir);cd cloudgamestream;./Setup.ps1
+choco install geforce-experience
 %{ endif }
 
 %{ if var.install_steam }

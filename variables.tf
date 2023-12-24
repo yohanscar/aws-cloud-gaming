@@ -57,8 +57,8 @@ variable "download_graphic_card_driver" {
   default     = true
 }
 
-variable "install_moonlight" {
-  description = "Download and install Moonlight NVIDIA's GameStream Client and GeForce Experience on first boot"
+variable "install_geforce_experience" {
+  description = "Download and install GeForce Experience on first boot"
   type        = bool
   default     = true
 }
