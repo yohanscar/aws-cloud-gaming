@@ -1,4 +1,4 @@
-name: Terraform Apply or Destroy Branch Main
+name: Terraform Apply or Destroy Branch Master
 run-name: User ${{ github.actor }} is applying or destroying terraform on branch ${{ github.ref }}
 on:
   push:
