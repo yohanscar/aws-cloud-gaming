@@ -3,7 +3,7 @@ run-name: User ${{ github.actor }} is applying or destroying terraform on branch
 on:
   push:
     branches:    
-      - master0
+      - master
 jobs:
   terraform-apply-destroy:
     runs-on: ubuntu-latest
