@@ -3,7 +3,7 @@ region = "sa-east-1"
 #instance_type = "g4dn.xlarge"
 root_block_device_size_gb = 160
 
-custom_ami = "ami-072f5700420465406"
+custom_ami = "ami-0462c5de6ce111f77"
 
 skip_install                 = true
 install_parsec               = true
