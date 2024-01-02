@@ -21,10 +21,28 @@ variable "instance_type" {
   default     = "g4dn.xlarge"
 }
 
+variable "root_block_device_volume_type" {
+  description = "The type of the root block device (C:\\ drive) attached to the instance"
+  type        = string
+  default     = "gp2"
+}
+
 variable "root_block_device_size_gb" {
   description = "The size of the root block device (C:\\ drive) attached to the instance"
   type        = number
   default     = 120
+}
+
+variable "root_block_device_iops" {
+  description = "The number of provisioned IOPS. This must be set with a volume_type of io1 or io2"
+  type        = number
+  default     = 480
+}
+
+variable "root_block_device_throughput" {
+  description = "The throughput (MiB/s) that the volume supports. This must be set with a volume_type of gp3"
+  type        = number
+  default     = 0
 }
 
 variable "custom_ami" {

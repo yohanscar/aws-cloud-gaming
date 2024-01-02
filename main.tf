@@ -40,7 +40,10 @@ resource "aws_spot_instance_request" "windows_instance" {
   # EBS configuration
   ebs_optimized = true
   root_block_device {
+    volume_type = var.root_block_device_volume_type
     volume_size = var.root_block_device_size_gb
+    iops        = var.root_block_device_iops
+    throughput  = var.root_block_device_throughput
   }
 
   tags = {
