@@ -3,10 +3,10 @@ region = "sa-east-1"
 #instance_type = "g4dn.xlarge"
 root_block_device_volume_type = "gp3"
 root_block_device_size_gb     = 180
-root_block_device_iops        = 1000
-root_block_device_throughput  = 125
+root_block_device_iops        = 3000
+root_block_device_throughput  = 250
 
-custom_ami = "ami-072f5700420465406"
+custom_ami = "ami-0ea190d8f031588cc"
 
 skip_install                 = true
 install_parsec               = true
