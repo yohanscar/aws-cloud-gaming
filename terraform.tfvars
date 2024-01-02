@@ -1,13 +1,9 @@
 region = "sa-east-1"
-#allowed_availability_zone_identifier = ["a", "b"]
-#instance_type = "g4dn.xlarge"
 root_block_device_volume_type = "gp3"
 root_block_device_size_gb     = 180
-root_block_device_iops        = 1000
-root_block_device_throughput  = 125
-
-custom_ami = "ami-0462c5de6ce111f77"
-
+root_block_device_iops        = 3000
+root_block_device_throughput  = 250
+custom_ami = "ami-0ea190d8f031588cc"
 skip_install                 = true
 install_parsec               = true
 install_auto_login           = true
