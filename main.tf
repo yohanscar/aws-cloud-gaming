@@ -37,7 +37,7 @@ resource "aws_spot_instance_request" "windows_instance" {
   spot_type            = "one-time"
   wait_for_fulfillment = true
 
-  # EBS configuration
+  # EBS configuration (https://docs.aws.amazon.com/pt_br/AWSEC2/latest/UserGuide/ebs-volume-types.html)
   ebs_optimized = true
   root_block_device {
     volume_type = var.root_block_device_volume_type
